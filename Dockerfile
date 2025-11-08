@@ -1,13 +1,13 @@
-FROM devopsedu/webapp:latest
+FROM php:7.4-fpm
 
-# Copy PHP application files
+RUN apt-get update && apt-get install -y nginx
+
 COPY . /var/www/html/
 
-# Set permissions
+COPY nginx.conf /etc/nginx/nginx.conf
+
 RUN chmod -R 755 /var/www/html
 
-# Expose port 80
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+CMD service php7.4-fpm start && nginx -g 'daemon off;'
