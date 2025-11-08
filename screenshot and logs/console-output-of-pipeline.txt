@@ -1,0 +1,209 @@
+Started by user Sujatro Das
+[Pipeline] Start of Pipeline
+[Pipeline] stage
+[Pipeline] { (Install Puppet Agent)
+[Pipeline] node
+Running on test-server in /home/jenkins/workspace/PHP-CI-CD-Pipeline
+[Pipeline] {
+[Pipeline] echo
+Installing Puppet Agent...
+[Pipeline] sh
++ wget https://apt.puppet.com/puppet7-release-focal.deb
+--2025-11-08 23:28:35--  https://apt.puppet.com/puppet7-release-focal.deb
+Resolving apt.puppet.com (apt.puppet.com)... 18.164.144.40, 18.164.144.116, 18.164.144.16, ...
+Connecting to apt.puppet.com (apt.puppet.com)|18.164.144.40|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 3784 (3.7K) [application/vnd.debian.binary-package]
+Saving to: ‘puppet7-release-focal.deb.7’
+
+     0K ...                                                   100% 1.73M=0.002s
+
+2025-11-08 23:28:35 (1.73 MB/s) - ‘puppet7-release-focal.deb.7’ saved [3784/3784]
+
++ sudo dpkg -i puppet7-release-focal.deb
+(Reading database ... 264612 files and directories currently installed.)
+Preparing to unpack puppet7-release-focal.deb ...
+Unpacking puppet7-release (7.0.0-21focal) over (7.0.0-21focal) ...
+Setting up puppet7-release (7.0.0-21focal) ...
++ sudo apt update
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Hit:1 https://download.docker.com/linux/ubuntu jammy InRelease
+Hit:2 http://apt.puppet.com focal InRelease
+Hit:3 http://gb.archive.ubuntu.com/ubuntu jammy InRelease
+Hit:4 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:5 http://gb.archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:6 http://gb.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Reading package lists...
+Building dependency tree...
+Reading state information...
+All packages are up to date.
+W: https://download.docker.com/linux/ubuntu/dists/jammy/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
++ sudo apt install puppet-agent -y
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+puppet-agent is already the newest version (7.34.0-1focal).
+The following package was automatically installed and is no longer required:
+  openjdk-11-jdk-headless
+Use 'sudo apt autoremove' to remove it.
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
++ sudo systemctl start puppet
++ sudo systemctl enable puppet
++ /opt/puppetlabs/bin/puppet --version
+7.34.0
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Install Docker with Ansible)
+[Pipeline] node
+Running on test-server in /home/jenkins/workspace/PHP-CI-CD-Pipeline
+[Pipeline] {
+[Pipeline] echo
+Installing Docker using Ansible...
+[Pipeline] sh
++ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/bin:/usr/local/bin
++ cd /home/jenkins/ansible-playbooks
++ ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts.ini install_docker.yml
+[WARNING]: Invalid characters were found in group names but not replaced, use
+-vvvv to see details
+
+PLAY [Install Docker on Test Server] *******************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [192.168.0.105]
+
+TASK [Update apt cache] ********************************************************
+changed: [192.168.0.105]
+
+TASK [Install required packages] ***********************************************
+ok: [192.168.0.105]
+
+TASK [Add Docker GPG key] ******************************************************
+ok: [192.168.0.105]
+
+TASK [Add Docker repository] ***************************************************
+ok: [192.168.0.105]
+
+TASK [Install Docker] **********************************************************
+ok: [192.168.0.105]
+
+TASK [Start Docker service] ****************************************************
+ok: [192.168.0.105]
+
+TASK [Add jenkins user to docker group] ****************************************
+ok: [192.168.0.105]
+
+PLAY RECAP *********************************************************************
+192.168.0.105              : ok=8    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build and Deploy Container)
+[Pipeline] node
+Running on test-server in /home/jenkins/workspace/PHP-CI-CD-Pipeline
+[Pipeline] {
+[Pipeline] echo
+Building and deploying Docker container...
+[Pipeline] git
+The recommended git tool is: NONE
+No credentials specified
+Fetching changes from the remote Git repository
+Checking out Revision 06fa8beb39c64c5a4f91c5a5dda603b8bd004950 (refs/remotes/origin/main)
+Commit message: "changed index.php"
+ > git rev-parse --resolve-git-dir /home/jenkins/workspace/PHP-CI-CD-Pipeline/.git # timeout=10
+ > git config remote.origin.url https://github.com/sujatrodas96/projCert.git # timeout=10
+Fetching upstream changes from https://github.com/sujatrodas96/projCert.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.34.1'
+ > git fetch --tags --force --progress -- https://github.com/sujatrodas96/projCert.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 06fa8beb39c64c5a4f91c5a5dda603b8bd004950 # timeout=10
+ > git branch -a -v --no-abbrev # timeout=10
+ > git branch -D main # timeout=10
+ > git checkout -b main 06fa8beb39c64c5a4f91c5a5dda603b8bd004950 # timeout=10
+ > git rev-list --no-walk 0fe861ca8ab0f991029adf5ebe42a51ab1c6a8e4 # timeout=10
+[Pipeline] sh
++ docker stop php-app
+php-app
++ docker rm php-app
+php-app
++ docker rmi php-webapp:latest
+Untagged: php-webapp:latest
++ docker build -t php-webapp:latest .
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 334B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/devopsedu/webapp:latest
+#2 DONE 1.9s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/4] FROM docker.io/devopsedu/webapp:latest@sha256:5c95d950c1638308e879edcbfba0fb5d856df594416c87a5639da02703a1b834
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 15.57kB done
+#5 DONE 0.0s
+
+#6 [2/4] RUN rm -f /var/www/html/index.html
+#6 CACHED
+
+#7 [3/4] COPY . /var/www/html/
+#7 DONE 0.1s
+
+#8 [4/4] RUN chmod -R 755 /var/www/html
+#8 DONE 0.6s
+
+#9 exporting to image
+#9 exporting layers 0.1s done
+#9 writing image sha256:709e488f89a29f995900c518845818d2d77a09c4d9f069211529dc208f0b491c done
+#9 naming to docker.io/library/php-webapp:latest done
+#9 DONE 0.1s
++ docker run -d --name php-app -p 8081:80 php-webapp:latest
+dd8014929dc3f96ebf8770fb41532673fbdcc8b746d32e7a36abc87264e7c0fb
++ docker ps
++ grep php-app
+dd8014929dc3   php-webapp:latest   "/usr/sbin/apache2ct…"   Less than a second ago   Up Less than a second   0.0.0.0:8081->80/tcp, [::]:8081->80/tcp   php-app
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deploy to Production)
+[Pipeline] node
+Running on test-server in /home/jenkins/workspace/PHP-CI-CD-Pipeline
+[Pipeline] {
+[Pipeline] echo
+Deploying to production...
+[Pipeline] sh
++ docker tag php-webapp:latest php-webapp:prod
++ echo Production deployment completed!
+Production deployment completed!
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] echo
+Pipeline completed successfully!
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] End of Pipeline
+Finished: SUCCESS
