@@ -1,4 +1,4 @@
-<?php echo 'Updated Application - Version 2'; 
+<?php 
 
 
 require 'config.php';
